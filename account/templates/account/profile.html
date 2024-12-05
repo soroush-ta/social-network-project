@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <h2>{{ user.username }}'s Profile</h2>
+    
+    <div class="row">
+        <!-- Profile Information and Follow Section -->
+        <div class="col-md-4">
+            <!-- Display Profile Picture -->
+            {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}'s profile picture" class="img-thumbnail" style="width: 150px; height: 150px;">
+            {% else %}
+                <img src="{% static 'pictures/default_profile_picture.png' %}" alt="Default profile picture" class="img-thumbnail" style="width: 150px; height: 150px;">
+            {% endif %}
+
+            <!-- Display User and Profile Information -->
+            <div class="mt-3">
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Bio:</strong> {{ user.profile.bio }}</p>
+            </div>
+
+            <!-- Edit Profile Button -->
+            {% if user == request.user %}
+                <a href="{% url 'account:profile_edit' %}" class="btn btn-primary mt-3">Edit Profile</a>
+            {% endif %}
+
+            <!-- Follow/Unfollow Button if not the current user's profile -->
+            {% if request.user.id != user.id %}
+                {% if is_following %}
+                    <a class="btn btn-primary" href="{% url 'account:unfollow' user.id %}">Unfollow</a>
+                {% else %}
+                    <a class="btn btn-primary" href="{% url 'account:follow' user.id %}">Follow</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- User Posts Section -->
+        <div class="col-md-6">
+            <h3 class="mb-4">{{ user.username }}'s Posts</h3>
+            
+            {% if posts %}
+                <div class="list-group">
+                    {% for post in posts %}
+                        <div class="list-group-item">
+                            <h5>{{ post.title }}</h5>
+                            <p>{{ post.body|truncatewords:30 }}</p>
+                            <a href="{{ post.get_absolute_url }}" class="btn btn-sm btn-secondary">Read More</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">No posts yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Followings/Followers Section -->
+        <div class="col-md-2">
+            <h4>Followers</h4>
+            <ul>
+                {% for follower in followers %}
+                    <li><a href="{% url 'account:profile' follower.id %}">{{ follower.username }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <h4>Following</h4>
+            <ul>
+                {% for following in followings %}
+                    <li><a href="{% url 'account:profile' following.id %}">{{ following.username }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
